@@ -42,7 +42,7 @@
 volatile uint16_t rpm = 0;
 volatile int8_t dir = 1;   // Should be -1 or 1
 
-ISR(TIMER1_CAPT_vect)
+ISR(TIMER3_CAPT_vect)
 {
 	PORTB ^= _BV(3);
 
@@ -54,12 +54,12 @@ ISR(TIMER1_CAPT_vect)
 	//	tPulse = t - tStart;
 	//}
 
-	rpm = (F_CPU/256) * 60 / ICR1;
-	TCNT1 = 0;   // Reset timer
+	rpm = (F_CPU/256) * 60 / ICR3;
+	TCNT3 = 0;   // Reset timer
 }
 
 // On overflow, reset rpm.
-ISR(TIMER1_OVF_vect)
+ISR(TIMER3_OVF_vect)
 {
 	rpm = 0;
 }
@@ -83,17 +83,20 @@ int main(void)
 	DDRB |= _BV(1) | _BV(2) | _BV(3);
 	PORTB &= ~(_BV(1) | _BV(2) | _BV(3));   // Start LEDs off
 
-	// ICU on Timer1, pin D4
-	PORTD |= _BV(4);   // Enable pullup
-	DDRD &= ~_BV(4);   // Set as input
+	// ICU on Timer3, pin C7
+	PORTC |= _BV(7);   // Enable pullup
+	DDRC &= ~_BV(7);   // Set as input
 	setup_icu();
 
 	// PWM out on Timer3, pin C6
-	OCR3AL = 0x85;   //Load Pulse width
-	OCR3AH = 0;
-	DDRC |= _BV(6);   //Port C6 as o/p
-	TCCR3A = 0x81;   //8-bit, Non-Inverted PWM
-	TCCR3B = 0x03;   // Prescaler
+	//OCR3AL = 0x85;   //Load Pulse width
+	//OCR3AH = 0;
+	//DDRC |= _BV(6);   //Port C6 as o/p
+	//TCCR3A = 0x81;   //8-bit, Non-Inverted PWM
+	//TCCR3B = 0x03;   // Prescaler
+
+	// Debug
+	DDRD |= _BV(0);
 
 	// PINF1 acc z
 
@@ -130,15 +133,18 @@ int main(void)
 
 		// 0x85 = 1064 us
 		// 0xe8 = 1856 us
-		OCR3AL += dir;
-		if (OCR3AL < 0x05) {
-			dir = 4;
-		}
-		else if (OCR3AL > 0xe8) {
-			dir = -2;
-		}
+		PORTD |= _BV(0);
+		PORTD &= ~_BV(0);
 
-		_delay_ms(10);
+		//OCR3AL += dir;
+		//if (OCR3AL < 0x05) {
+		//	dir = 4;
+		//}
+		//else if (OCR3AL > 0xe8) {
+		//	dir = -2;
+		//}
+
+		_delay_ms(100);
 	}
 
 	return 0;
