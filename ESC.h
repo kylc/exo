@@ -29,18 +29,18 @@
 
 void initESC()
 {
-	DDRB = (1 << 5);
+	DDRB |= _BV(5);
 	ICR1 = 5000;
-	TCCR1A |= (0 << COM1A0) | (1 << COM1A1) | (0 << COM1B0) | (0 << COM1B1) | (0 << FOC1A) | (0 << FOC1B) | (1 << WGM11) | (0 << WGM10);
-	TCCR1B |= (0 << ICNC1) | (0 << ICES1) | (1 << WGM13) | (1 << WGM12) | (0 << CS12) | (1<<CS11) | (0<<CS10);
+	TCCR1A |= (0 << COM1A0) | (1 << COM1A1) | (1 << WGM11) | (0 << WGM10);
+	TCCR1B |= (1 << WGM13) | (1 << WGM12) | (0 << CS12) | (1<<CS11) | (0<<CS10);
 }
 
 void armESC(){
-	OCR1A = 2955;
+	OCR1A = 2915;
 	_delay_ms(1000);
 }
 
-void setESC(int duty){
-	OCR1A = 800*(duty/1024) + 2155;
+void setESC(int16_t duty){
+	OCR1A = ((int32_t) 800)*duty / 512 + 2915;
 }
 

@@ -28,6 +28,7 @@
 
 #include "glove.h"
 #include "icu.h"
+#include "ESC.h"
 
 #define CPU_PRESCALE(n)	(CLKPR = 0x80, CLKPR = (n))
 
@@ -40,7 +41,8 @@
 //}
 
 volatile uint16_t rpm = 0;
-volatile int8_t dir = 1;   // Should be -1 or 1
+volatile int16_t dir = 1;   // Should be -1 or 1
+volatile int16_t dc = 0;
 
 ISR(TIMER3_CAPT_vect)
 {
@@ -69,8 +71,6 @@ int main(void)
 	// set for 16 MHz clock
 	CPU_PRESCALE(0);
 
-	PCICR |= _BV(PCIE0);
-	PCMSK0 |= _BV(PCINT4);
 	sei();
 
 	// initialize the USB, but don't want for the host to
@@ -87,6 +87,7 @@ int main(void)
 	PORTC |= _BV(7);   // Enable pullup
 	DDRC &= ~_BV(7);   // Set as input
 	setup_icu();
+	initESC();
 
 	// PWM out on Timer3, pin C6
 	//OCR3AL = 0x85;   //Load Pulse width
@@ -103,6 +104,8 @@ int main(void)
 	glove_init();
 
 	struct glove_state_t glove_state;
+
+	armESC();
 
 	int state = 0;
 	while(1) {
@@ -128,7 +131,7 @@ int main(void)
 		//print("\n");
 
 		print("RPM: ");
-		phex16(rpm);
+		phex16(dc);
 		print("\n");
 
 		// 0x85 = 1064 us
@@ -136,15 +139,16 @@ int main(void)
 		PORTD |= _BV(0);
 		PORTD &= ~_BV(0);
 
-		//OCR3AL += dir;
-		//if (OCR3AL < 0x05) {
-		//	dir = 4;
-		//}
-		//else if (OCR3AL > 0xe8) {
-		//	dir = -2;
-		//}
+		dc += dir;
+		if (dc < -90) {
+			dir = 1;
+		}
+		else if (dc > 90) {
+			dir = -1;
+		}
+		setESC(dc);
 
-		_delay_ms(100);
+		_delay_ms(5);
 	}
 
 	return 0;
