@@ -41,7 +41,7 @@
 
 
 # Target file name (without extension).
-TARGET = blinky
+TARGET = main
 
 
 # List C source files here. (C dependencies are automatically generated.)
