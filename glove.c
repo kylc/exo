@@ -22,11 +22,11 @@ void glove_update(struct glove_state_t *state) {
 }
 
 enum direction glove_direction(struct glove_state_t *state) {
-  if(state->raw_input < ADC_UP) {
-    return UP;
-  } else if(state->raw_input > ADC_DOWN) {
-    return DOWN;
-  }
+	if(state->raw_input < ADC_UP) {
+		return UP;
+	} else if(state->raw_input > ADC_DOWN) {
+		return DOWN;
+	}
 
-  return STOP;
+	return STOP;
 }
