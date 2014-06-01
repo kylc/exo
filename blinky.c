@@ -42,7 +42,7 @@
 volatile uint16_t rpm = 0;
 volatile int8_t dir = 1;   // Should be -1 or 1
 
-ISR(TIMER3_CAPT_vect)
+ISR(TIMER1_CAPT_vect)
 {
 	PORTB ^= _BV(3);
 
@@ -54,12 +54,12 @@ ISR(TIMER3_CAPT_vect)
 	//	tPulse = t - tStart;
 	//}
 
-	rpm = (F_CPU/256) * 60 / ICR3;
-	TCNT3 = 0;   // Reset timer
+	rpm = (F_CPU/256) * 60 / ICR1;
+	TCNT1 = 0;   // Reset timer
 }
 
 // On overflow, reset rpm.
-ISR(TIMER3_OVF_vect)
+ISR(TIMER1_OVF_vect)
 {
 	rpm = 0;
 }
@@ -83,15 +83,22 @@ int main(void)
 	DDRB |= _BV(1) | _BV(2) | _BV(3);
 	PORTB &= ~(_BV(1) | _BV(2) | _BV(3));   // Start LEDs off
 
-	// ICU on Timer3, pin C7 (Timer1 can be enabled on D4)
-	PORTC |= _BV(7);   // Enable pullup
-	DDRC &= ~_BV(7);   // Set as input
+	// ICU on Timer1, pin D4
+	PORTD |= _BV(4);   // Enable pullup
+	DDRD &= ~_BV(4);   // Set as input
 	DDRD |= _BV(0);   // Set test output pin
+	setup_icu();
+
+	// PWM out on Timer3, pin C6
+	OCR3AL = 0x00;   //Load Pulse width
+	OCR3AH = 0;
+	DDRC |= _BV(6);   //Port C6 as o/p
+	TCCR3A = 0x81;   //8-bit, Non-Inverted PWM
+	TCCR3B = 1;   //Start PWM
 
 	// PINF1 acc z
 
 	glove_init();
-	setup_icu();
 
 	struct glove_state_t glove_state;
 
@@ -124,6 +131,7 @@ int main(void)
 
 		PORTD |= _BV(0);
 		PORTD &= ~_BV(0);
+		OCR3AL = 0x81;
 		_delay_ms(100);
 	}
 
