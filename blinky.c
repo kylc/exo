@@ -86,15 +86,14 @@ int main(void)
 	// ICU on Timer1, pin D4
 	PORTD |= _BV(4);   // Enable pullup
 	DDRD &= ~_BV(4);   // Set as input
-	DDRD |= _BV(0);   // Set test output pin
 	setup_icu();
 
 	// PWM out on Timer3, pin C6
-	OCR3AL = 0x00;   //Load Pulse width
+	OCR3AL = 0x85;   //Load Pulse width
 	OCR3AH = 0;
 	DDRC |= _BV(6);   //Port C6 as o/p
 	TCCR3A = 0x81;   //8-bit, Non-Inverted PWM
-	TCCR3B = 1;   //Start PWM
+	TCCR3B = 0x03;   // Prescaler
 
 	// PINF1 acc z
 
@@ -129,10 +128,17 @@ int main(void)
 		phex16(rpm);
 		print("\n");
 
-		PORTD |= _BV(0);
-		PORTD &= ~_BV(0);
-		OCR3AL = 0x81;
-		_delay_ms(100);
+		// 0x85 = 1064 us
+		// 0xe8 = 1856 us
+		OCR3AL += dir;
+		if (OCR3AL < 0x05) {
+			dir = 4;
+		}
+		else if (OCR3AL > 0xe8) {
+			dir = -2;
+		}
+
+		_delay_ms(10);
 	}
 
 	return 0;
