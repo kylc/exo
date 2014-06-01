@@ -126,13 +126,17 @@ int main(void)
 
 		glove_update(&glove_state);
 
-		//print("PWM: ");
-		//phex(glove_state.raw_input);
-		//print("\n");
+		// print("ADC: ");
+		// phex(glove_state.raw_input);
+		// print("\n");
 
-		print("RPM: ");
-		phex16(dc);
+		print("Direction: ");
+		phex(glove_direction(&glove_state));
 		print("\n");
+
+		// print("RPM: ");
+		// phex16(dc);
+		// print("\n");
 
 		// 0x85 = 1064 us
 		// 0xe8 = 1856 us
