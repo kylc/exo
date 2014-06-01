@@ -105,9 +105,9 @@ int main(void)
 		// phex(glove_state.raw_input);
 		// print("\n");
 
-		print("Direction: ");
-		phex(glove_direction(&glove_state));
-		print("\n");
+		// print("Direction: ");
+		// phex(glove_direction(&glove_state));
+		// print("\n");
 
 		// print("RPM: ");
 		// phex16(dc);
@@ -118,14 +118,17 @@ int main(void)
 		PORTD |= _BV(0);
 		PORTD &= ~_BV(0);
 
-		dc += dir;
-		if (dc < -90) {
-			dir = 1;
+		enum direction dir = glove_direction(&glove_state);
+		if(dir == STOP) {
+		  setESC(0);
+		  print("Stopped\n");
+		} else if(dir == UP) {
+		  setESC(100);
+		  print("Moving up\n");
+		} else if(dir == DOWN) {
+		  setESC(-100);
+		  print("Moving down\n");
 		}
-		else if (dc > 90) {
-			dir = -1;
-		}
-		setESC(dc);
 
 		_delay_ms(5);
 	}
