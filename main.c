@@ -26,6 +26,7 @@
 #include <util/delay.h>
 #include "print.h"
 
+#include "safety.h"
 #include "glove.h"
 #include "icu.h"
 #include "ESC.h"
@@ -81,6 +82,7 @@ int main(void)
 
 	// LEDs
 	DDRB |= _BV(1) | _BV(2) | _BV(3);
+	PORTB |= _BV(0);
 	PORTB &= ~(_BV(1) | _BV(2) | _BV(3));   // Start LEDs off
 
 	// ICU on Timer3, pin C7
@@ -92,6 +94,8 @@ int main(void)
 	// Debug
 	DDRD |= _BV(0);
 
+	safety_init();
+
 	struct glove_state_t glove_state;
 	glove_init();
 
@@ -101,9 +105,9 @@ int main(void)
 	while(1) {
 		glove_update(&glove_state);
 
-		// print("ADC: ");
-		// phex(glove_state.raw_input);
-		// print("\n");
+		print("ADC: ");
+		phex(glove_state.raw_input);
+		print("\n");
 
 		// print("Direction: ");
 		// phex(glove_direction(&glove_state));
@@ -118,16 +122,27 @@ int main(void)
 		PORTD |= _BV(0);
 		PORTD &= ~_BV(0);
 
-		enum direction dir = glove_direction(&glove_state);
-		if(dir == STOP) {
-		  setESC(0);
-		  print("Stopped\n");
-		} else if(dir == UP) {
-		  setESC(100);
-		  print("Moving up\n");
-		} else if(dir == DOWN) {
-		  setESC(-100);
-		  print("Moving down\n");
+		if(safety_enabled()) {
+		  enum direction dir = glove_direction(&glove_state);
+		  if(dir == STOP) {
+		    setESC(0);
+		    print("Stopped\n");
+		    PORTB |= _BV(1);
+		    PORTB &= ~(_BV(2) | _BV(3));   // Start LEDs off
+		  } else if(dir == UP) {
+		    setESC(100);
+		    print("Moving up\n");
+		    PORTB |= _BV(2);
+		    PORTB &= ~(_BV(1) | _BV(3));   // Start LEDs off
+		  } else if(dir == DOWN) {
+		    setESC(-100);
+		    print("Moving down\n");
+		    PORTB |= _BV(3);
+		    PORTB &= ~(_BV(1) | _BV(2));   // Start LEDs off
+		  }
+		} else {
+		    setESC(0);
+		    print("Disarmed\n");
 		}
 
 		_delay_ms(5);

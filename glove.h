@@ -1,8 +1,8 @@
 #ifndef GLOVE_H
 #define GLOVE_H
 
-#define ADC_UP 191
-#define ADC_DOWN 236
+#define ADC_UP 0x9B
+#define ADC_DOWN 0x7D
 
 #include <stdint.h>
 

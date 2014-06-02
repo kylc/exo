@@ -46,6 +46,7 @@ TARGET = main
 
 # List C source files here. (C dependencies are automatically generated.)
 SRC =	$(TARGET).c \
+	safety.c \
 	glove.c \
 	usb_debug_only.c \
 	print.c

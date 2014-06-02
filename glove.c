@@ -3,7 +3,8 @@
 #include <avr/io.h>
 
 void glove_init() {
-	DDRF |= _BV(1); // potentiometer input
+	DDRF |= _BV(4) | _BV(1); // potentiometer input
+	PORTF |= _BV(4);
 
 	ADCSRA |= _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0); // set prescalar values
 
@@ -22,9 +23,9 @@ void glove_update(struct glove_state_t *state) {
 }
 
 enum direction glove_direction(struct glove_state_t *state) {
-	if(state->raw_input < ADC_UP) {
+	if(state->raw_input > ADC_UP) {
 		return UP;
-	} else if(state->raw_input > ADC_DOWN) {
+	} else if(state->raw_input < ADC_DOWN) {
 		return DOWN;
 	}
 
